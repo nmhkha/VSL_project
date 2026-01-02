@@ -1,0 +1,44 @@
+================================================================================
+                    VSL COMMUNICATOR - LỊCH SỬ THAY ĐỔI
+================================================================================
+
+Phiên bản: 2.1
+Ngày cập nhật: 2026-01-03
+
+================================================================================
+                              CẤU TRÚC THƯ MỤC MỚI
+================================================================================
+
+VSL_project/
+├── main.py                 # Entry point
+├── README.md
+├── CHANGES.txt
+├── src/                    # SOURCE CODE
+│   ├── __init__.py         # Package init
+│   ├── config.py           # Cấu hình
+│   ├── backend.py          # Logic xử lý (MediaPipe, dự đoán)
+│   └── gui.py              # Giao diện Tkinter
+├── models/                 # MODEL FILES
+│   └── model.p             # Model dự đoán
+├── data/                   # TRAINING DATA/SCRIPTS
+│   ├── collect_images.py   # Thu thập ảnh
+│   └── create_dataset.py   # Tạo dataset
+└── legacy/                 # BACKUP
+    └── app_demo.py         # Phiên bản cũ
+
+================================================================================
+                              THAY ĐỔI TỪ PHIÊN BẢN 2.0
+================================================================================
+
+[2.1] Tổ chức lại thư mục:
+  • Tách source code vào thư mục src/
+  • Tách model vào thư mục models/
+  • Tách training scripts vào thư mục data/
+  • Di chuyển app_demo.py cũ vào legacy/
+
+[2.0] Tái cấu trúc ứng dụng:
+  • Chia 1 file → 4 files (config, backend, gui, main)
+  • Giao diện mới: Grid layout 65/35
+  • Text Area lớn (Font 36pt)
+  • Progress bar, nút Đọc (TTS)
+
