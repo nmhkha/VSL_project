@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+vsl_communicator.log
+.mediapipe_models/
+*.pickle
+# Model files are large, usually ignored if using Git LFS or external storage
+# but I'll leave models/ out of ignore for now as per project needs
