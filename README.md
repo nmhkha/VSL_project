@@ -2,75 +2,76 @@
 
 **Ứng dụng Dịch Ngôn ngữ Ký hiệu Việt Nam (Vietnamese Sign Language)**
 
+Phiên bản: 2.2 (Beta - Tích hợp Gợi ý từ)
+
 ---
 
-## � Cấu trúc dự án
+## 📁 Cấu trúc dự án
 
 ```
 VSL_project/
-├── main.py                 # � Điểm khởi động chính
+├── main.py                 # 🚀 Điểm khởi động chính
 ├── README.md
 ├── CHANGES.txt
-├── src/                    # Source code
+├── src/
 │   ├── __init__.py
 │   ├── config.py           # ⚙️ Cấu hình
-│   ├── backend.py          # 🧠 Logic xử lý
-│   └── gui.py              # 🎨 Giao diện
-├── models/                 # Model files
+│   ├── backend.py          # 🧠 Logic xử lý ảnh
+│   ├── gui.py              # 🎨 Giao diện người dùng
+│   └── word_suggester.py   # 📖 Logic gợi ý từ (MỚI)
+├── models/
 │   └── model.p
-├── data/                   # Training scripts
+├── data/
+│   ├── words.csv           # 📖 Từ điển tiếng Việt
 │   ├── collect_images.py
 │   └── create_dataset.py
-└── legacy/                 # Backup
+└── legacy/
     └── app_demo.py
 ```
 
 ---
 
-## 🔧 Cài đặt
+## ✨ Tính năng Nổi bật (Mới cập nhật)
+
+### 📖 Gợi ý từ Tiếng Việt thông minh
+- Khi gõ hoặc nhận diện các ký tự không dấu (vd: `h`, `o`, `c`), hệ thống sẽ tự động tra cứu.
+- Hiển thị 5 từ gợi ý gần nhất (vd: `học`, `hóc`, `hốc`, `họa`, `hoặc`).
+- **Nút Space**: Tự động chốt từ vào câu.
+- **Click chọn**: Chọn nhanh từ gợi ý bằng chuột.
+
+---
+
+## 🔧 Cài đặt & Chạy
 
 ```bash
-pip install opencv-python mediapipe pillow numpy scikit-learn
-pip install pyttsx3  # Tùy chọn: Text-to-Speech
+# Cài đặt thư viện
+pip install opencv-python mediapipe pillow numpy scikit-learn pyttsx3
+
+# Chạy ứng dụng
+cd d:\Video\VSL_project
+python main.py
 ```
 
 ---
 
-## 🚀 Cách sử dụng
+## ⚙️ Cấu hình (src/config.py)
 
-### Hướng dẫn:
-1. Đưa tay vào camera
-2. Ra ký hiệu ngôn ngữ ký hiệu
-3. Giữ ổn định 3 giây → ký tự được thêm vào
-4. Nhấn nút "Đọc" để nghe văn bản
-
----
-
-## ⚙️ Cấu hình
-
-Chỉnh sửa trong `src/config.py`:
-
-| Thông số | Giá trị mặc định | Mô tả |
-|----------|------------------|-------|
-| `TEXT_AREA_FONT_SIZE` | 36 | Kích thước font text |
-| `STABLE_PREDICTION_THRESHOLD` | 3.0 | Giây giữ để xác nhận |
-| `WINDOW_WIDTH/HEIGHT` | 1200x900 | Kích thước cửa sổ |
+| Thông số | Giá trị | Mô tả |
+|---|---|---|
+| `WORDS_CSV_PATH` | `./data/words.csv` | Đường dẫn file từ điển |
+| `STABLE_PREDICTION_THRESHOLD` | 3.0 | Giây giữ để nhận diện |
 
 ---
 
-## ⌨️ Phím tắt
+## 📖 Hướng dẫn sử dụng Gợi ý từ
 
-| Phím | Chức năng |
-|------|-----------|
-| `q` / `Esc` | Thoát |
-
----
-
-## 🔍 Khắc phục sự cố
-
-- **Không mở webcam**: Kiểm tra webcam, đổi `WEBCAM_INDEX` trong config
-- **Model không load**: Đảm bảo `models/model.p` tồn tại
-- **TTS không hoạt động**: `pip install pyttsx3`
+1. **Nhập liệu**: Ra ký hiệu tay để nhập các chữ cái (vd: t, r, u, o, n, g).
+2. **Buffer**: Các chữ cái sẽ hiện ở dòng `Buffer:` màu xanh lá.
+3. **Gợi ý**: Các nút phía dưới sẽ hiện từ gợi ý (trường, trưởng, trướng...).
+4. **Chọn từ**:
+   - Nhấn **Space** để chọn buffer hiện tại.
+   - Click chuột vào nút để chọn từ có dấu.
+5. **Sửa lỗi**: Nhấn **Backspace** để xóa ký tự cuối trong Buffer.
 
 ---
 

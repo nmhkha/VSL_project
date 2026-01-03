@@ -1,0 +1,66 @@
+================================================================================
+          CHI TIẾT KẾ HOẠCH CẬP NHẬT & SO SÁNH (ORIGINAL vs V2.2)
+================================================================================
+
+Tài liệu này tóm tắt các thay đổi kỹ thuật và tính năng so với yêu cầu ban đầu.
+
+--------------------------------------------------------------------------------
+1. KIẾN TRÚC HỆ THỐNG (SYSTEM ARCHITECTURE)
+--------------------------------------------------------------------------------
+
+[BAN ĐẦU]
+- Yêu cầu chia code thành 3 phần: Config, Backend, GUI.
+- Có thể để chung 1 file hoặc tách file.
+
+[THỰC TẾ TRIỂN KHAI - V2.2]
+- Cấu trúc thư mục phân cấp chuyên nghiệp:
+  + src/        : Chứa mã nguồn chính (config.py, backend.py, gui.py, word_suggester.py)
+  + models/     : Chứa file model AI (model.p, hand_landmarker.task)
+  + data/       : Chứa dữ liệu từ điển (words.csv) và script training
+  + main.py     : File chạy chính ở thư mục gốc
+- Lợi ích: Quản lý file dễ dàng, tránh lộn xộn giữa code và data.
+
+--------------------------------------------------------------------------------
+2. GIAO DIỆN NGƯỜI DÙNG (FRONTEND)
+--------------------------------------------------------------------------------
+
+[BAN ĐẦU]
+- Layout Grid hoặc Split View (65% trên / 35% dưới).
+- Text Area lớn thay vì Label nhỏ.
+- Nút chức năng: Xóa, Đọc, Cài đặt.
+
+[THỰC TẾ TRIỂN KHAI - V2.2]
+- Layout: Đã thực hiện đúng tỉ lệ 65/35.
+- Text Area: Font Arial Bold size 36, hỗ trợ scroll và chỉnh sửa trực tiếp.
+- Nút chức năng mở rộng:
+  + Thêm nút "Space": Để chốt từ/thêm khoảng trắng (hỗ trợ màn hình cảm ứng).
+  + Thêm nút "Backspace": Xóa ký tự thông minh (xóa buffer trước, rồi mới xóa câu).
+- TÍNH NĂNG MỚI:
+  + Typing Buffer: Dòng chữ nhỏ hiển thị các ký tự đang ghép (vd: 'n', 'g', 'a').
+  + Suggestion Bar: Hàng 5 nút hiển thị từ gợi ý tiếng Việt (vd: 'ngã', 'ngà').
+
+--------------------------------------------------------------------------------
+3. LOGIC XỬ LÝ (BACKEND & FLOW)
+--------------------------------------------------------------------------------
+
+[BAN ĐẦU]
+- Nhận diện ký tự -> Giữ 3 giây -> Thêm thẳng vào câu.
+
+[THỰC TẾ TRIỂN KHAI - V2.2]
+- Luồng xử lý thông minh hơn (Smart Input Flow):
+  1. Nhận diện ký tự -> Giữ 3 giây -> Đưa vào "Buffer" (Bộ đệm).
+  2. Từ "Buffer" -> Tra cứu từ điển -> Hiển thị Gợi ý.
+  3. Hành động chốt:
+     - Chọn nút Gợi ý -> Chốt từ có dấu vào câu.
+     - Nhấn Space -> Chốt từ trong Buffer vào câu.
+- Module "WordSuggester":
+  - Đọc file CSV 79.000 từ.
+  - Xử lý chuẩn hóa tiếng Việt (xóa dấu) để tra cứu.
+
+--------------------------------------------------------------------------------
+4. TỔNG KẾT
+--------------------------------------------------------------------------------
+
+Phiên bản hiện tại không chỉ đáp ứng yêu cầu về giao diện "Gần và Lớn" mà còn
+giải quyết bài toán nhập liệu tiếng Việt một cách tự nhiên hơn thông qua cơ chế
+gợi ý từ và bộ đệm (buffer).

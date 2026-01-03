@@ -74,6 +74,9 @@ MEDIAPIPE_MODEL_DIR = os.path.join(os.path.expanduser("~"), ".mediapipe_models")
 HAND_LANDMARKER_MODEL = "hand_landmarker.task"
 HAND_LANDMARKER_URL = "https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task"
 
+# Đường dẫn file từ điển
+WORDS_CSV_PATH = "./data/words.csv"
+
 # =============================================================================
 # 5. PREDICTION SETTINGS (Cài đặt dự đoán)
 # =============================================================================

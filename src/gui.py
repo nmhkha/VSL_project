@@ -2,7 +2,7 @@
 # VSL Communicator - GUI (Frontend)
 # =============================================================================
 # Giao diện Tkinter với layout split-view (Video trên, Text dưới).
-# Không chứa logic xử lý ảnh - chỉ hiển thị.
+# Tích hợp tính năng gợi ý từ tiếng Việt.
 # =============================================================================
 
 import tkinter as tk
@@ -11,6 +11,7 @@ from PIL import Image, ImageTk
 import cv2
 
 from . import config
+from .word_suggester import WordSuggester
 
 # Thử import pyttsx3 cho Text-to-Speech
 try:
@@ -28,7 +29,7 @@ class VSLGUI:
     
     Layout:
     - Phần trên (65%): Video feed với skeleton và prediction box
-    - Phần dưới (35%): Text area lớn + các nút chức năng
+    - Phần dưới (35%): Panel điều khiển (Status, Buffer, Suggestions, Text Area, Buttons)
     """
     
     def __init__(self, root: tk.Tk, backend):
@@ -52,6 +53,10 @@ class VSLGUI:
         self.running = True
         self.sentence_tokens = []
         self.last_appended_token = ""
+        
+        # Biến cho tính năng gợi ý từ
+        self.current_buffer = ""  # Chuỗi ký tự đang gõ dở (vd: 'hoc')
+        self.suggester = WordSuggester(config.WORDS_CSV_PATH)
         
         # Text-to-Speech engine
         self.tts_engine = None
@@ -100,27 +105,33 @@ class VSLGUI:
         self.control_frame = tk.Frame(self.root, bg=config.BG_PANEL)
         self.control_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
         
-        # Chia control panel thành 2 phần: Status + Text Area | Buttons
-        self.control_frame.grid_rowconfigure(0, weight=0)  # Status bar
-        self.control_frame.grid_rowconfigure(1, weight=1)  # Text area
-        self.control_frame.grid_columnconfigure(0, weight=1)
-        self.control_frame.grid_columnconfigure(1, weight=0)  # Buttons column
+        # Chia control panel:
+        # Row 0: Status + Progress + Buffer
+        # Row 1: Suggestion Buttons
+        # Row 2: Text Area
+        # Col 1: Function Buttons (Right side)
         
-        # ----- Status Bar -----
+        self.control_frame.grid_rowconfigure(0, weight=0)  # Status Bar
+        self.control_frame.grid_rowconfigure(1, weight=0)  # Suggestions
+        self.control_frame.grid_rowconfigure(2, weight=1)  # Text Area
+        self.control_frame.grid_columnconfigure(0, weight=1) # Main content
+        self.control_frame.grid_columnconfigure(1, weight=0) # Side buttons
+        
+        # ----- Row 0: Status Bar & Buffer -----
         self.status_frame = tk.Frame(self.control_frame, bg=config.BG_PANEL)
         self.status_frame.grid(row=0, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
         
         # Progress label
         self.status_label = tk.Label(
             self.status_frame,
-            text="Giữ 3s: Chờ tay...",
+            text="Giữ 3s: ...",
             bg=config.BG_PANEL,
             fg=config.TEXT_SECONDARY,
             font=(config.STATUS_FONT_FAMILY, config.STATUS_FONT_SIZE, config.STATUS_FONT_WEIGHT)
         )
         self.status_label.pack(side=tk.LEFT)
         
-        # Progress bar (canvas)
+        # Progress bar
         self.progress_canvas = tk.Canvas(
             self.status_frame,
             width=200,
@@ -131,22 +142,49 @@ class VSLGUI:
         )
         self.progress_canvas.pack(side=tk.LEFT, padx=20)
         
-        # ----- Text Area (Khung soạn thảo lớn) -----
-        self.text_frame = tk.Frame(self.control_frame, bg=config.BG_TEXT)
-        self.text_frame.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+        # Buffer Label (Hiển thị ký tự đang gõ dở)
+        self.buffer_label = tk.Label(
+            self.status_frame,
+            text="Buffer: ",
+            bg=config.BG_PANEL,
+            fg=config.TEXT_ACCENT,
+            font=(config.STATUS_FONT_FAMILY, config.STATUS_FONT_SIZE, "bold")
+        )
+        self.buffer_label.pack(side=tk.RIGHT, padx=10)
         
-        # Scrollbar
+        # ----- Row 1: Suggestion Buttons -----
+        self.suggestion_frame = tk.Frame(self.control_frame, bg=config.BG_PANEL)
+        self.suggestion_frame.grid(row=1, column=0, columnspan=2, sticky="ew", padx=10, pady=5)
+        
+        self.suggestion_buttons = []
+        for i in range(5):
+            btn = tk.Button(
+                self.suggestion_frame,
+                text="",
+                font=(config.BUTTON_FONT_FAMILY, 14),
+                bg=config.BUTTON_BG,
+                fg=config.BUTTON_FG,
+                command=lambda idx=i: self._on_suggestion_click(idx),
+                width=15
+            )
+            # Mặc định ẩn nút
+            btn.pack_forget() 
+            self.suggestion_buttons.append(btn)
+            
+        # ----- Row 2: Text Area -----
+        self.text_frame = tk.Frame(self.control_frame, bg=config.BG_TEXT)
+        self.text_frame.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+        
         self.text_scrollbar = tk.Scrollbar(self.text_frame)
         self.text_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         
-        # Text widget
         self.text_area = tk.Text(
             self.text_frame,
             bg=config.BG_TEXT,
             fg=config.TEXT_PRIMARY,
             font=(config.TEXT_AREA_FONT_FAMILY, config.TEXT_AREA_FONT_SIZE, config.TEXT_AREA_FONT_WEIGHT),
             wrap=tk.WORD,
-            insertbackground=config.TEXT_PRIMARY,  # Màu con trỏ
+            insertbackground=config.TEXT_PRIMARY,
             selectbackground=config.TEXT_SECONDARY,
             selectforeground=config.BG_DARK,
             padx=15,
@@ -156,11 +194,10 @@ class VSLGUI:
         self.text_area.pack(expand=True, fill=tk.BOTH)
         self.text_scrollbar.config(command=self.text_area.yview)
         
-        # ----- Buttons Panel -----
+        # ----- Side Buttons Panel -----
         self.buttons_frame = tk.Frame(self.control_frame, bg=config.BG_PANEL)
-        self.buttons_frame.grid(row=1, column=1, sticky="ns", padx=10, pady=10)
+        self.buttons_frame.grid(row=2, column=1, sticky="ns", padx=10, pady=10)
         
-        # Style cho buttons
         button_font = (config.BUTTON_FONT_FAMILY, config.BUTTON_FONT_SIZE, config.BUTTON_FONT_WEIGHT)
         button_config = {
             'width': config.BUTTON_WIDTH,
@@ -173,76 +210,68 @@ class VSLGUI:
             'cursor': 'hand2'
         }
         
-        # Nút Xóa
-        self.clear_button = tk.Button(
-            self.buttons_frame,
-            text="🗑️ Xóa",
-            command=self._on_clear,
-            **button_config
-        )
+        self.clear_button = tk.Button(self.buttons_frame, text="🗑️ Xóa", command=self._on_clear, **button_config)
         self.clear_button.pack(pady=5, fill=tk.X)
         
-        # Nút Đọc
-        self.speak_button = tk.Button(
-            self.buttons_frame,
-            text="🔊 Đọc",
-            command=self._on_speak,
-            **button_config
-        )
+        self.speak_button = tk.Button(self.buttons_frame, text="🔊 Đọc", command=self._on_speak, **button_config)
         self.speak_button.pack(pady=5, fill=tk.X)
         
-        # Nút Khoảng trắng
-        self.space_button = tk.Button(
-            self.buttons_frame,
-            text="⎵ Space",
-            command=self._on_space,
-            **button_config
-        )
+        self.space_button = tk.Button(self.buttons_frame, text="⎵ Space", command=self._on_space, **button_config)
         self.space_button.pack(pady=5, fill=tk.X)
         
-        # Nút Backspace
-        self.backspace_button = tk.Button(
-            self.buttons_frame,
-            text="⌫ Xóa ký tự",
-            command=self._on_backspace,
-            **button_config
-        )
+        self.backspace_button = tk.Button(self.buttons_frame, text="⌫ Xóa ký tự", command=self._on_backspace, **button_config)
         self.backspace_button.pack(pady=5, fill=tk.X)
         
-        # Separator
+        # Nút cài đặt (placeholder)
         tk.Frame(self.buttons_frame, height=20, bg=config.BG_PANEL).pack()
-        
-        # Nút Cài đặt (placeholder)
-        self.settings_button = tk.Button(
-            self.buttons_frame,
-            text="⚙️ Cài đặt",
-            command=self._on_settings,
-            **button_config
-        )
+        self.settings_button = tk.Button(self.buttons_frame, text="⚙️ Cài đặt", command=self._on_settings, **button_config)
         self.settings_button.pack(pady=5, fill=tk.X)
     
     def _bind_shortcuts(self):
-        """Bind các phím tắt."""
         self.root.bind('q', lambda e: self.on_closing())
         self.root.bind('Q', lambda e: self.on_closing())
         self.root.bind('<Escape>', lambda e: self.on_closing())
-        
-        # Phím cách - thêm khoảng trắng (chỉ khi focus không ở text area)
-        # self.root.bind('<space>', lambda e: self._on_space() if e.widget != self.text_area else None)
-    
+
+    def _on_suggestion_click(self, index):
+        """Xử lý khi click vào nút gợi ý."""
+        if 0 <= index < len(self.suggestion_buttons):
+            text = self.suggestion_buttons[index].cget("text")
+            if text:
+                # 1. Thêm từ đã chọn vào câu
+                self.text_area.insert(tk.END, text + " ")
+                self.sentence_tokens.append(text)
+                self.sentence_tokens.append(" ")
+                
+                # 2. Xóa buffer và reset gợi ý
+                self.current_buffer = ""
+                self._update_suggestions_ui([])
+                self._update_buffer_ui()
+
+    def _update_suggestions_ui(self, suggestions):
+        """Cập nhật hiển thị các nút gợi ý."""
+        for i, btn in enumerate(self.suggestion_buttons):
+            if i < len(suggestions):
+                btn.configure(text=suggestions[i])
+                btn.pack(side=tk.LEFT, padx=5) # Hiện nút
+            else:
+                btn.configure(text="")
+                btn.pack_forget() # Ẩn nút
+
+    def _update_buffer_ui(self):
+        """Cập nhật hiển thị buffer label."""
+        self.buffer_label.configure(text=f"Buffer: {self.current_buffer}")
+
     def _on_clear(self):
-        """Xử lý nút Xóa - xóa toàn bộ text."""
         self.text_area.delete("1.0", tk.END)
         self.sentence_tokens = []
+        self.current_buffer = ""
         self.last_appended_token = ""
+        self._update_suggestions_ui([])
+        self._update_buffer_ui()
     
     def _on_speak(self):
-        """Xử lý nút Đọc - đọc text trong text area."""
         text = self.text_area.get("1.0", tk.END).strip()
-        
-        if not text:
-            return
-        
+        if not text: return
         if self.tts_engine:
             try:
                 self.tts_engine.say(text)
@@ -253,135 +282,106 @@ class VSLGUI:
             print(f"TTS không khả dụng. Text: {text}")
     
     def _on_space(self):
-        """Thêm khoảng trắng vào text area."""
-        self.text_area.insert(tk.END, " ")
-        self.sentence_tokens.append(" ")
-        self.last_appended_token = " "
+        """
+        Nút Space:
+        - Nếu có buffer: chốt buffer vào câu -> thêm space -> xóa buffer
+        - Nếu không buffer: thêm space bình thường
+        """
+        if self.current_buffer:
+            # Chốt buffer hiện tại
+            self.text_area.insert(tk.END, self.current_buffer + " ")
+            self.sentence_tokens.append(self.current_buffer)
+            self.sentence_tokens.append(" ")
+            
+            # Reset buffer
+            self.current_buffer = ""
+            self._update_suggestions_ui([])
+            self._update_buffer_ui()
+        else:
+            # Thêm khoảng trắng thường
+            self.text_area.insert(tk.END, " ")
+            self.sentence_tokens.append(" ")
+            self.last_appended_token = " "
     
     def _on_backspace(self):
-        """Xóa ký tự cuối cùng."""
-        content = self.text_area.get("1.0", tk.END)
-        if len(content) > 1:  # Có ký tự để xóa (không tính newline cuối)
-            self.text_area.delete("end-2c", "end-1c")
-            if self.sentence_tokens:
-                self.sentence_tokens.pop()
+        """
+        Nút Backspace:
+        - Ưu tiên xóa ký tự trong buffer trước.
+        - Nếu buffer rỗng thì xóa ký tự trong text area.
+        """
+        if self.current_buffer:
+            self.current_buffer = self.current_buffer[:-1]
+            self._update_buffer_ui()
+            # Cập nhật gợi ý mới sau khi xóa bớt
+            suggestions = self.suggester.get_suggestions(self.current_buffer)
+            self._update_suggestions_ui(suggestions)
+        else:
+            # Logic cũ: Xóa trong text area
+            content = self.text_area.get("1.0", tk.END)
+            if len(content) > 1:
+                self.text_area.delete("end-2c", "end-1c")
+                if self.sentence_tokens:
+                    self.sentence_tokens.pop()
     
     def _on_settings(self):
-        """Mở cửa sổ cài đặt (placeholder)."""
-        # Tạo dialog đơn giản
-        settings_window = tk.Toplevel(self.root)
-        settings_window.title("Cài đặt")
-        settings_window.geometry("400x300")
-        settings_window.configure(bg=config.BG_PANEL)
-        settings_window.transient(self.root)
-        settings_window.grab_set()
-        
-        tk.Label(
-            settings_window,
-            text="⚙️ Cài đặt\n\n(Tính năng đang phát triển)",
-            bg=config.BG_PANEL,
-            fg=config.TEXT_PRIMARY,
-            font=(config.STATUS_FONT_FAMILY, 16)
-        ).pack(expand=True)
-        
-        tk.Button(
-            settings_window,
-            text="Đóng",
-            command=settings_window.destroy,
-            bg=config.BUTTON_BG,
-            fg=config.BUTTON_FG,
-            font=(config.BUTTON_FONT_FAMILY, 12)
-        ).pack(pady=20)
-    
+        pass # Placeholder
+
     def _update_progress_bar(self, progress: float):
-        """
-        Cập nhật thanh tiến độ.
-        
-        Args:
-            progress: Giá trị từ 0.0 đến 1.0
-        """
         self.progress_canvas.delete("all")
-        
         width = 200
         height = 20
         fill_width = int(width * progress)
-        
-        # Màu gradient từ vàng sang xanh lá khi đầy
-        if progress < 1.0:
-            color = config.TEXT_SECONDARY  # Vàng
-        else:
-            color = config.TEXT_ACCENT  # Xanh lá
-        
-        # Vẽ thanh tiến độ
+        color = config.TEXT_SECONDARY if progress < 1.0 else config.TEXT_ACCENT
         if fill_width > 0:
-            self.progress_canvas.create_rectangle(
-                0, 0, fill_width, height,
-                fill=color, outline=""
-            )
+            self.progress_canvas.create_rectangle(0, 0, fill_width, height, fill=color, outline="")
     
     def update_frame(self):
-        """Cập nhật frame video và prediction."""
-        if not self.running:
-            return
+        if not self.running: return
         
-        # Lấy frame từ backend
         frame, current_pred, confirmed_pred, hold_progress = self.backend.process_frame()
         
         if frame is not None:
-            # Chuyển BGR sang RGB
             frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            
-            # Tính kích thước phù hợp với panel
             panel_height = self.video_label.winfo_height()
             panel_width = self.video_label.winfo_width()
             
             if panel_height > 10 and panel_width > 10:
-                # Tính tỷ lệ khung hình
                 aspect_ratio = frame.shape[1] / frame.shape[0]
-                
-                # Tính kích thước mới
                 new_height = panel_height - 10
                 new_width = int(new_height * aspect_ratio)
-                
                 if new_width > panel_width - 10:
                     new_width = panel_width - 10
-                    new_height = int(new_width / aspect_ratio)
-                
+                    new_height = int(new_width/aspect_ratio)
                 frame_resized = cv2.resize(frame_rgb, (new_width, new_height))
             else:
                 frame_resized = frame_rgb
-            
-            # Chuyển sang ImageTk
+                
             image = Image.fromarray(frame_resized)
             photo = ImageTk.PhotoImage(image=image)
-            
             self.video_label.configure(image=photo)
-            self.video_label.image = photo  # Giữ reference
-        
-        # Cập nhật status label
-        if current_pred:
-            status_text = f"Giữ 3s: {current_pred}"
-        else:
-            status_text = "Giữ 3s: Chờ tay..."
+            self.video_label.image = photo
+
+        status_text = f"Giữ 3s: {current_pred}" if current_pred else "Giữ 3s: ..."
         self.status_label.configure(text=status_text)
-        
-        # Cập nhật progress bar
         self._update_progress_bar(hold_progress)
         
-        # Nếu có ký tự xác nhận mới, thêm vào text area
+        # LOGIC MỚI: Xử lý ký tự xác nhận
         if confirmed_pred and confirmed_pred != self.last_appended_token:
-            self.text_area.insert(tk.END, confirmed_pred)
-            self.sentence_tokens.append(confirmed_pred)
+            # Thay vì thêm ngay vào câu, thêm vào Buffer
+            self.current_buffer += confirmed_pred
             self.last_appended_token = confirmed_pred
+            self.backend.confirmed_prediction = "" # Reset backend
             
-            # Reset confirmed trong backend để tránh thêm trùng
-            self.backend.confirmed_prediction = ""
-        
-        # Lên lịch cập nhật tiếp theo
+            # Cập nhật UI Buffer
+            self._update_buffer_ui()
+            
+            # Lấy gợi ý từ Backend
+            suggestions = self.suggester.get_suggestions(self.current_buffer)
+            self._update_suggestions_ui(suggestions)
+            
         self.root.after(config.FRAME_UPDATE_INTERVAL, self.update_frame)
     
     def on_closing(self):
-        """Xử lý khi đóng cửa sổ."""
         self.running = False
         self.backend.release()
         self.root.destroy()

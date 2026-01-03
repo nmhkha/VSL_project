@@ -1,0 +1,64 @@
+2026-01-03 16:56:26,101 [INFO] VSL Backend initialized
+2026-01-03 16:56:41,928 [INFO] Loaded model from ./models/model.p
+2026-01-03 16:56:42,883 [INFO] Downloaded hand_landmarker.task to C:\Users\ASUS\.mediapipe_models\hand_landmarker.task
+2026-01-03 16:56:43,007 [INFO] HandLandmarker initialized
+2026-01-03 16:56:45,443 [INFO] Webcam initialized
+2026-01-03 16:57:21,321 [INFO] VSL Backend released
+2026-01-03 16:57:32,546 [INFO] VSL Backend initialized
+2026-01-03 16:57:33,032 [INFO] Loaded model from ./models/model.p
+2026-01-03 16:57:33,071 [INFO] HandLandmarker initialized
+2026-01-03 16:57:35,439 [INFO] Webcam initialized
+2026-01-03 16:57:36,624 [INFO] Imported existing <module 'comtypes.gen' from 'C:\\Users\\ASUS\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\comtypes\\gen\\__init__.py'>
+2026-01-03 16:57:36,625 [INFO] Using writeable comtypes cache directory: 'C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\comtypes\gen'
+2026-01-03 16:57:36,744 [INFO] Could not import comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4: Typelib different than module
+2026-01-03 16:57:36,759 [INFO] # Generating comtypes.gen._C866CA3A_32F7_11D2_9602_00C04F8EE628_0_5_4
+2026-01-03 16:57:36,800 [INFO] # Generating comtypes.gen.SpeechLib
+2026-01-03 16:58:36,653 [INFO] VSL Backend released
+2026-01-03 18:44:07,197 [INFO] VSL Backend initialized
+2026-01-03 18:44:07,692 [INFO] Loaded model from ./models/model.p
+2026-01-03 18:44:07,738 [INFO] HandLandmarker initialized
+2026-01-03 18:44:10,019 [INFO] Webcam initialized
+2026-01-03 18:44:10,122 [INFO] Imported existing <module 'comtypes.gen' from 'C:\\Users\\ASUS\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\comtypes\\gen\\__init__.py'>
+2026-01-03 18:44:10,122 [INFO] Using writeable comtypes cache directory: 'C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\comtypes\gen'
+2026-01-03 18:46:52,150 [INFO] VSL Backend released
+2026-01-03 19:03:27,481 [INFO] VSL Backend initialized
+2026-01-03 19:03:28,143 [INFO] Loaded model from ./models/model.p
+2026-01-03 19:03:28,258 [INFO] HandLandmarker initialized
+2026-01-03 19:03:30,543 [INFO] Webcam initialized
+2026-01-03 19:03:30,652 [INFO] Imported existing <module 'comtypes.gen' from 'C:\\Users\\ASUS\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\comtypes\\gen\\__init__.py'>
+2026-01-03 19:03:30,653 [INFO] Using writeable comtypes cache directory: 'C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\comtypes\gen'
+2026-01-03 19:03:46,312 [INFO] VSL Backend released
+2026-01-03 19:06:19,034 [INFO] VSL Backend initialized
+2026-01-03 19:06:19,670 [INFO] Loaded model from ./models/model.p
+2026-01-03 19:06:19,720 [INFO] HandLandmarker initialized
+2026-01-03 19:06:24,275 [INFO] Webcam initialized
+2026-01-03 19:06:24,492 [INFO] Imported existing <module 'comtypes.gen' from 'C:\\Users\\ASUS\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\comtypes\\gen\\__init__.py'>
+2026-01-03 19:06:24,492 [INFO] Using writeable comtypes cache directory: 'C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\comtypes\gen'
+2026-01-03 19:06:51,726 [INFO] VSL Backend released
+2026-01-03 19:10:33,339 [INFO] VSL Backend initialized
+2026-01-03 19:10:33,799 [INFO] Loaded model from ./models/model.p
+2026-01-03 19:10:33,883 [INFO] HandLandmarker initialized
+2026-01-03 19:10:36,245 [INFO] Webcam initialized
+2026-01-03 19:10:36,342 [INFO] Imported existing <module 'comtypes.gen' from 'C:\\Users\\ASUS\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\comtypes\\gen\\__init__.py'>
+2026-01-03 19:10:36,343 [INFO] Using writeable comtypes cache directory: 'C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\comtypes\gen'
+2026-01-03 19:15:05,341 [INFO] VSL Backend released
+2026-01-03 19:25:26,633 [INFO] VSL Backend initialized
+2026-01-03 19:25:27,098 [INFO] Loaded model from ./models/model.p
+2026-01-03 19:25:27,202 [INFO] HandLandmarker initialized
+2026-01-03 19:25:29,553 [INFO] Webcam initialized
+2026-01-03 19:26:19,442 [INFO] VSL Backend released
+2026-01-03 22:44:53,756 [INFO] VSL Backend initialized
+2026-01-03 22:45:01,022 [INFO] Loaded model from ./models/model.p
+2026-01-03 22:45:01,275 [INFO] HandLandmarker initialized
+2026-01-03 22:45:03,733 [INFO] Webcam initialized
+2026-01-03 22:45:04,440 [INFO] Imported existing <module 'comtypes.gen' from 'C:\\Users\\ASUS\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\comtypes\\gen\\__init__.py'>
+2026-01-03 22:45:04,441 [INFO] Using writeable comtypes cache directory: 'C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\comtypes\gen'
+2026-01-03 22:48:05,037 [INFO] VSL Backend released
+2026-01-03 23:07:03,828 [INFO] VSL Backend initialized
+2026-01-03 23:07:04,297 [INFO] Loaded model from ./models/model.p
+2026-01-03 23:07:04,339 [INFO] HandLandmarker initialized
+2026-01-03 23:07:06,609 [INFO] Webcam initialized
+2026-01-03 23:07:06,830 [INFO] Loaded 79199 words into dictionary
+2026-01-03 23:07:06,857 [INFO] Imported existing <module 'comtypes.gen' from 'C:\\Users\\ASUS\\AppData\\Local\\Packages\\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\\LocalCache\\local-packages\\Python312\\site-packages\\comtypes\\gen\\__init__.py'>
+2026-01-03 23:07:06,857 [INFO] Using writeable comtypes cache directory: 'C:\Users\ASUS\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages\comtypes\gen'
+2026-01-03 23:09:52,645 [INFO] VSL Backend released
