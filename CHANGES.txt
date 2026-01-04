@@ -2,42 +2,45 @@
                     VSL COMMUNICATOR - LỊCH SỬ THAY ĐỔI
 ================================================================================
 
-Phiên bản: 2.2
-Ngày cập nhật: 2026-01-03
+Phiên bản: 2.3
+Ngày cập nhật: 2026-01-04
 
 ================================================================================
-                              TÍNH NĂNG MỚI: GỢI Ý TỪ
+                        THAY ĐỔI MỚI: LAYOUT CAMERA (V2.3)
+================================================================================
+
+[THAY ĐỔI GIAO DIỆN]
+- Di chuyển khung hiển thị Camera từ TRÊN xuống DƯỚI.
+- Di chuyển khung điều khiển (Status, Buffer, Suggestions, Text Area) từ DƯỚI lên TRÊN.
+
+[LÝ DO]
+- Người dùng thường nhìn vào phần Text để đọc câu đã soạn, nên đưa nó lên trên để dễ nhìn.
+- Camera ở dưới vẫn đủ lớn để quan sát tay khi cần.
+
+[FILE THAY ĐỔI]
+- src/gui.py: Đổi row positions (row 0 <-> row 1) cho video_frame và control_frame.
+
+================================================================================
+                              TÍNH NĂNG CŨ (V2.2)
 ================================================================================
 
 1. Backend (src/word_suggester.py)
-   - Thêm module `WordSuggester` đọc file `data/words.csv`.
+   - Module `WordSuggester` đọc file `data/words.csv`.
    - Xây dựng từ điển tra cứu nhanh (Key không dấu -> List từ có dấu).
-   - Hàm `remove_diacritics` chuẩn hóa tiếng Việt.
 
 2. Frontend (src/gui.py)
-   - Thêm "Typing Buffer": Lưu trữ tạm thời các ký tự đang gõ/nhận diện.
-   - Thêm "Suggestion Bar": Dải 5 nút hiển thị từ gợi ý.
-   - Nâng cấp Logic nhập liệu:
-     + Ký tự nhận diện -> Đưa vào Buffer (chưa vào câu ngay).
-     + Backspace -> Xóa Buffer trước, hết Buffer mới xóa câu.
-     + Space -> Chốt Buffer vào câu.
+   - "Typing Buffer": Lưu trữ ký tự đang gõ/nhận diện.
+   - "Suggestion Bar": Dải 5 nút hiển thị từ gợi ý.
+   - Logic: Ký tự -> Buffer -> Gợi ý -> Chọn từ.
 
 ================================================================================
-                              CẤU TRÚC THƯ MỤC
-================================================================================
-
-[+] src/word_suggester.py   (Logic gợi ý)
-[*] src/gui.py              (Cập nhật UI Buffer & Suggestion)
-[*] src/config.py           (Thêm đường dẫn CSV)
-
-================================================================================
-                              HƯỚNG DẪN SỬ DỤNG NHANH
+                              HƯỚNG DẪN SỬ DỤNG
 ================================================================================
 
 1. Chạy app: `python main.py`
-2. Đưa tay ra ký hiệu các chữ cái (ví dụ: c, a, m).
-3. Nhìn dòng "Buffer" thấy hiện "cam".
-4. Nhìn hàng nút gợi ý thấy "cảm", "cam", "cấm"...
-5. Click vào "cảm" -> Chữ "cảm" đi vào khung chat.
+2. Đưa tay ra ký hiệu (Camera ở phía dưới).
+3. Nhìn dòng "Buffer" ở trên để thấy các ký tự đang ghép.
+4. Nhìn hàng nút gợi ý để chọn từ có dấu.
+5. Click vào từ gợi ý hoặc nhấn Space để chốt.
 
 ================================================================================

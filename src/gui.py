@@ -85,25 +85,27 @@ class VSLGUI:
     def _create_ui(self):
         """Tạo các thành phần giao diện."""
         # Sử dụng Grid layout cho toàn bộ window
-        self.root.grid_rowconfigure(0, weight=config.VIDEO_PANEL_WEIGHT)
-        self.root.grid_rowconfigure(1, weight=config.TEXT_PANEL_WEIGHT)
+        # Row 0: Control Panel (35%), Row 1: Video (65%)
+        self.root.grid_rowconfigure(0, weight=config.TEXT_PANEL_WEIGHT, minsize=200)
+        self.root.grid_rowconfigure(1, weight=config.VIDEO_PANEL_WEIGHT, minsize=400)
         self.root.grid_columnconfigure(0, weight=1)
         
         # =====================================================================
-        # PHẦN TRÊN: Video Panel (65%)
+        # PHẦN DƯỚI: Video Panel (65%)
         # =====================================================================
-        self.video_frame = tk.Frame(self.root, bg=config.BG_DARK)
-        self.video_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
+        # DEBUG: Đổi màu nền thành đỏ để kiểm tra
+        self.video_frame = tk.Frame(self.root, bg='red')
+        self.video_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
         
         # Label hiển thị video
         self.video_label = tk.Label(self.video_frame, bg=config.BG_DARK)
         self.video_label.pack(expand=True, fill=tk.BOTH)
         
         # =====================================================================
-        # PHẦN DƯỚI: Control Panel (35%)
+        # PHẦN TRÊN: Control Panel (35%)
         # =====================================================================
         self.control_frame = tk.Frame(self.root, bg=config.BG_PANEL)
-        self.control_frame.grid(row=1, column=0, sticky="nsew", padx=5, pady=5)
+        self.control_frame.grid(row=0, column=0, sticky="nsew", padx=5, pady=5)
         
         # Chia control panel:
         # Row 0: Status + Progress + Buffer
@@ -345,16 +347,18 @@ class VSLGUI:
             panel_height = self.video_label.winfo_height()
             panel_width = self.video_label.winfo_width()
             
+            # Resize frame để fit vào panel
             if panel_height > 10 and panel_width > 10:
                 aspect_ratio = frame.shape[1] / frame.shape[0]
                 new_height = panel_height - 10
                 new_width = int(new_height * aspect_ratio)
                 if new_width > panel_width - 10:
                     new_width = panel_width - 10
-                    new_height = int(new_width/aspect_ratio)
+                    new_height = int(new_width / aspect_ratio)
                 frame_resized = cv2.resize(frame_rgb, (new_width, new_height))
             else:
-                frame_resized = frame_rgb
+                # Nếu panel chưa có kích thước, dùng kích thước mặc định
+                frame_resized = cv2.resize(frame_rgb, (640, 480))
                 
             image = Image.fromarray(frame_resized)
             photo = ImageTk.PhotoImage(image=image)

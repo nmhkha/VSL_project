@@ -2,7 +2,7 @@
 
 **Ứng dụng Dịch Ngôn ngữ Ký hiệu Việt Nam (Vietnamese Sign Language)**
 
-Phiên bản: 2.2 (Beta - Tích hợp Gợi ý từ)
+Phiên bản: 2.3 (Camera ở Dưới)
 
 ---
 
@@ -18,7 +18,7 @@ VSL_project/
 │   ├── config.py           # ⚙️ Cấu hình
 │   ├── backend.py          # 🧠 Logic xử lý ảnh
 │   ├── gui.py              # 🎨 Giao diện người dùng
-│   └── word_suggester.py   # 📖 Logic gợi ý từ (MỚI)
+│   └── word_suggester.py   # 📖 Logic gợi ý từ
 ├── models/
 │   └── model.p
 ├── data/
@@ -31,11 +31,27 @@ VSL_project/
 
 ---
 
-## ✨ Tính năng Nổi bật (Mới cập nhật)
+## ✨ Tính năng Nổi bật
+
+### 🎯 Giao diện Tối ưu (v2.3)
+**Layout mới:**
+```
+┌──────────────────────────────────────────┐
+│  Status | Progress | Buffer: hue         │
+│  [huế] [huế] [huế] [Huế]  ← Gợi ý       │
+├──────────────────────────────────────────┤
+│  [Text Area - Font 36pt]                 │
+│  bún bò                                  │
+│                                          │
+├──────────────────────────────────────────┤
+│  📹 CAMERA VIDEO (Skeleton + Box)        │
+│     Hiển thị tay và nhận diện           │
+└──────────────────────────────────────────┘
+```
 
 ### 📖 Gợi ý từ Tiếng Việt thông minh
-- Khi gõ hoặc nhận diện các ký tự không dấu (vd: `h`, `o`, `c`), hệ thống sẽ tự động tra cứu.
-- Hiển thị 5 từ gợi ý gần nhất (vd: `học`, `hóc`, `hốc`, `họa`, `hoặc`).
+- Khi gõ các ký tự không dấu (vd: `h`, `u`, `e`), hệ thống tự động tra cứu.
+- Hiển thị 5 từ gợi ý gần nhất (vd: `huế`, `huế`, `Huế`).
 - **Nút Space**: Tự động chốt từ vào câu.
 - **Click chọn**: Chọn nhanh từ gợi ý bằng chuột.
 
@@ -54,20 +70,11 @@ python main.py
 
 ---
 
-## ⚙️ Cấu hình (src/config.py)
+## 📖 Hướng dẫn sử dụng
 
-| Thông số | Giá trị | Mô tả |
-|---|---|---|
-| `WORDS_CSV_PATH` | `./data/words.csv` | Đường dẫn file từ điển |
-| `STABLE_PREDICTION_THRESHOLD` | 3.0 | Giây giữ để nhận diện |
-
----
-
-## 📖 Hướng dẫn sử dụng Gợi ý từ
-
-1. **Nhập liệu**: Ra ký hiệu tay để nhập các chữ cái (vd: t, r, u, o, n, g).
-2. **Buffer**: Các chữ cái sẽ hiện ở dòng `Buffer:` màu xanh lá.
-3. **Gợi ý**: Các nút phía dưới sẽ hiện từ gợi ý (trường, trưởng, trướng...).
+1. **Nhập liệu**: Ra ký hiệu tay ở phía dưới màn hình (vùng camera).
+2. **Buffer**: Các chữ cái sẽ hiện ở dòng `Buffer:` màu xanh lá (phía trên).
+3. **Gợi ý**: Các nút phía dưới Buffer sẽ hiện từ gợi ý.
 4. **Chọn từ**:
    - Nhấn **Space** để chọn buffer hiện tại.
    - Click chuột vào nút để chọn từ có dấu.
