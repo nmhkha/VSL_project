@@ -49,6 +49,12 @@ class VSLBackend:
         self.last_prediction = ""         # Dự đoán frame trước
         self.prediction_start_time = None # Thời điểm bắt đầu giữ cùng ký tự
         
+        # Frame counting state (cho logic realtime_detection)
+        self.frame_count = 0              # Đếm số frame liên tục cùng ký tự
+        self.predicted_text = " "         # Cấu liên tục (debug)
+        self.same_characters = ""         # Ký tự giống nhau liên tục
+        self.final_characters = ""        # Văn bản cuối cùng (output)
+        
         # Frame counter for MediaPipe timestamp
         self.frame_id = 0
         
@@ -253,31 +259,63 @@ class VSLBackend:
     def update_stable_prediction(self, current_pred: str):
         """
         Cập nhật trạng thái dự đoán ổn định.
-        Nếu giữ cùng ký tự >= threshold giây thì xác nhận.
+        Hỗ trợ cả frame counting và time counting.
         
         Args:
             current_pred: Dự đoán hiện tại
         """
-        threshold = config.STABLE_PREDICTION_THRESHOLD
-        now = time.time()
-        
-        if not current_pred:
-            self.last_prediction = ""
-            self.prediction_start_time = None
-            self.confirmed_prediction = ""
-            return
-        
-        if current_pred != self.last_prediction:
+        if config.USE_FRAME_COUNTING:
+            # ===== FRAME COUNTING MODE (giống realtime_detection.py) =====
+            if not current_pred or current_pred == "nothing":
+                self.frame_count = 0
+                self.same_characters = ""
+                self.last_prediction = ""
+                return
+            
+            # Thêm vào predicted_text để tracking
+            self.predicted_text += current_pred
+            
+            # Kiểm tra nếu khác ký tự trước
+            if len(self.predicted_text) >= 2 and self.predicted_text[-1] != self.predicted_text[-2]:
+                self.frame_count = 0
+                self.same_characters = ""
+            else:
+                self.same_characters += current_pred
+                self.frame_count += 1
+            
             self.last_prediction = current_pred
-            self.prediction_start_time = now
-            self.confirmed_prediction = ""
-            return
-        
-        # Cùng prediction
-        if self.prediction_start_time is not None:
-            elapsed = now - self.prediction_start_time
-            if elapsed >= threshold:
+            
+            # Xác nhận khi đạt threshold
+            if self.frame_count >= config.FRAME_COUNT_THRESHOLD:
                 self.confirmed_prediction = current_pred
+                # Thêm vào output
+                self.add_character_to_output(current_pred)
+                # Reset counter
+                self.frame_count = 0
+                self.same_characters = ""
+        
+        else:
+            # ===== TIME COUNTING MODE (logic cũ) =====
+            threshold = config.STABLE_PREDICTION_THRESHOLD
+            now = time.time()
+            
+            if not current_pred:
+                self.last_prediction = ""
+                self.prediction_start_time = None
+                self.confirmed_prediction = ""
+                return
+            
+            if current_pred != self.last_prediction:
+                self.last_prediction = current_pred
+                self.prediction_start_time = now
+                self.confirmed_prediction = ""
+                return
+            
+            # Cùng prediction
+            if self.prediction_start_time is not None:
+                elapsed = now - self.prediction_start_time
+                if elapsed >= threshold:
+                    self.confirmed_prediction = current_pred
     
     def get_hold_progress(self) -> float:
         """
@@ -286,12 +324,81 @@ class VSLBackend:
         Returns:
             float: Tỷ lệ thời gian đã giữ / threshold
         """
-        if self.prediction_start_time is None or not self.last_prediction:
-            return 0.0
+        if config.USE_FRAME_COUNTING:
+            # Dùng frame counting
+            return min(self.frame_count / config.FRAME_COUNT_THRESHOLD, 1.0)
+        else:
+            # Dùng time counting
+            if self.prediction_start_time is None or not self.last_prediction:
+                return 0.0
+            
+            elapsed = time.time() - self.prediction_start_time
+            progress = min(elapsed / config.STABLE_PREDICTION_THRESHOLD, 1.0)
+            return progress
+    
+    def process_command(self, command: str) -> bool:
+        """
+        Xử lý các commands đặc biệt (del, clear, space).
         
-        elapsed = time.time() - self.prediction_start_time
-        progress = min(elapsed / config.STABLE_PREDICTION_THRESHOLD, 1.0)
-        return progress
+        Args:
+            command: Ký tự dự đoán
+            
+        Returns:
+            bool: True nếu là command, False nếu là ký tự thường
+        """
+        if command in ["del", "1"]:
+            if self.final_characters:
+                self.final_characters = self.final_characters[:-1]
+            return True
+        
+        elif command in ["clear", "2"]:
+            self.final_characters = ""
+            return True
+        
+        elif command in ["space", "3"]:
+            self.final_characters += " "
+            return True
+        
+        return False
+    
+    def add_character_to_output(self, char: str):
+        """
+        Thêm ký tự vào output, có mapping qua labels.
+        
+        Args:
+            char: Ký tự dự đoán
+        """
+        # Xử lý command trước
+        if self.process_command(char):
+            return
+        
+        # Map ký tự qua labels
+        try:
+            char_to_add = config.LABELS_MAP.get(char, char)
+        except (KeyError, AttributeError):
+            char_to_add = char
+        
+        # Chỉ thêm nếu không rỗng và không phải "nothing"
+        if char_to_add and char_to_add != "nothing":
+            self.final_characters += char_to_add
+    
+    def get_final_text(self) -> str:
+        """
+        Lấy văn bản output hiện tại.
+        
+        Returns:
+            str: Văn bản đã xác nhận
+        """
+        return self.final_characters
+    
+    def reset_output_text(self):
+        """
+        Reset văn bản output.
+        """
+        self.final_characters = ""
+        self.predicted_text = " "
+        self.same_characters = ""
+        self.frame_count = 0
     
     def process_frame(self):
         """
@@ -358,8 +465,9 @@ class VSLBackend:
         # Cập nhật trạng thái ổn định
         self.update_stable_prediction(self.current_prediction)
         
-        # Vẽ prediction box
-        self.draw_prediction_box(frame, self.current_prediction)
+        # Vẽ prediction box với labels mapping
+        display_char = config.LABELS_MAP.get(self.current_prediction, self.current_prediction)
+        self.draw_prediction_box(frame, display_char)
         
         # Tính tiến độ giữ
         hold_progress = self.get_hold_progress()
@@ -388,9 +496,10 @@ if __name__ == "__main__":
         while True:
             frame, current, confirmed, progress = backend.process_frame()
             if frame is not None:
-                # Hiển thị tiến độ
+                # Hiển thị tiến độ và output text
+                output_text = backend.get_final_text()
                 if current:
-                    print(f"\rCurrent: {current} | Progress: {progress*100:.0f}% | Confirmed: {confirmed}", end="")
+                    print(f"\rCurrent: {current} | Progress: {progress*100:.0f}% | Confirmed: {confirmed} | Text: {output_text[:50]}", end="")
                 
                 cv2.imshow("VSL Backend Test", frame)
                 if cv2.waitKey(1) & 0xFF == ord('q'):

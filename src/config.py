@@ -83,8 +83,19 @@ WORDS_CSV_PATH = "./data/words.csv"
 # Thời gian giữ ổn định để xác nhận ký tự (giây)
 STABLE_PREDICTION_THRESHOLD = 3.0
 
+# Frame counting mode (số frame liên tục cần để xác nhận)
+FRAME_COUNT_THRESHOLD = 15
+USE_FRAME_COUNTING = True  # True: đếm frame, False: đếm thời gian
+
 # Số bàn tay tối đa phát hiện
 MAX_HANDS = 1
+
+# Labels mapping (chuyển đổi ký tự đặc biệt)
+LABELS_MAP = {
+    "a": "a", "b": "b", "c": "c", "d": "d", "dd": "đ", "e": "e", "f": "f", "g": "g", "h": "h", "i": "i",
+    "j": "j", "k": "k", "l": "l", "m": "m", "n": "n", "o": "o", "p": "p", "q": "q", "r": "r",
+    "s": "s", "t": "t", "u": "u", "v": "v", "w": "w", "x": "x", "y": "y", "z": "z",
+}
 
 # =============================================================================
 # 6. WEBCAM SETTINGS (Cài đặt webcam)
